@@ -132,10 +132,10 @@ abstract class AmazonCore
      * from the list to use as a response. See <i>setMock</i> for more information.</p>
      * @param string $config [optional] <p>An alternate config file to set. Used for testing.</p>
      */
-    protected function __construct($s, $mock = false, $m = null)
+    protected function __construct($s, $mock = false, $m = null, $config = null)
     {
         $this->setConfig();
-        $this->setStore($s);
+        $this->setStore($s, $config);
         $this->setMock($mock, $m);
 
         $this->env = __DIR__ . '/environment.php';
@@ -401,7 +401,7 @@ abstract class AmazonCore
      * @param string $s <p>The store name to look for.</p>
      * @throws Exception If the file can't be found.
      */
-    public function setStore($s)
+    public function setStore($s, $config = null)
     {
         // if (file_exists($this->config)){
         //     include($this->config);
@@ -409,7 +409,17 @@ abstract class AmazonCore
         //     throw new \Exception("Config file does not exist!");
         // }
 
-        $store = Config::get('amazon-mws.store');
+        if(is_null($config)){
+            $store = Config::get('amazon-mws.store');
+        }else{
+            $store[$s] = [
+                'merchantId' => $config->merchant_id,
+                'marketplaceId' => $config->marketplace_id,
+                'keyId'         => $config->keyId,
+                'secretKey'     => $config->secretKey,
+                'amazonServiceUrl' => 'https://mws-eu.amazonservices.com/'
+            ];
+        }
 
         if (array_key_exists($s, $store)) {
             $this->storeName = $s;
