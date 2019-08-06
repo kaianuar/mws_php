@@ -134,8 +134,9 @@ abstract class AmazonCore
      */
     protected function __construct($s, $mock = false, $m = null, $config = null)
     {
+        $this->config = $config;
         $this->setConfig();
-        $this->setStore($s, $config);
+        $this->setStore($s, $this->config);
         $this->setMock($mock, $m);
 
         $this->env = __DIR__ . '/environment.php';
@@ -600,7 +601,21 @@ abstract class AmazonCore
         //     throw new Exception("Config file does not exist!");
         // }
 
-        $store = Config::get('amazon-mws.store');
+        $config = $this->config;
+
+        if(is_null($config)){
+            $store = Config::get('amazon-mws.store');
+        }else{
+            $store[$this->storeName] = [
+                'merchantId' => $config->merchant_id,
+                'marketplaceId' => $config->marketplace_id,
+                'keyId'         => $config->keyId,
+                'secretKey'     => $config->secretKey,
+                'amazonServiceUrl' => 'https://mws-eu.amazonservices.com/'
+            ];
+        }        
+
+        // $store = Config::get('amazon-mws.store');
 
         if (array_key_exists($this->storeName, $store) && array_key_exists('secretKey', $store[$this->storeName])) {
             $secretKey = $store[$this->storeName]['secretKey'];
